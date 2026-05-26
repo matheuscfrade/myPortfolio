@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio Profissional</title>
+  <meta name="description" content="Aplicativo Windows para organizar documentos profissionais localmente e publicar um portfólio estático.">
+  <style>
+    :root {
+      --ifmg-verde: #2F9E41;
+      --ifmg-verde-dark: #258A36;
+      --ifmg-verde-light: #E8F5EB;
+      --ifmg-vermelho: #CD191E;
+      --bg: #0F1110;
+      --bg-alt: #161817;
+      --surface: #1C1F1D;
+      --surface-2: #252825;
+      --text: #E8EBE8;
+      --text-muted: #A7AEA8;
+      --text-subtle: #8A918B;
+      --border: #2F3430;
+      --border-strong: #3C423D;
+      --blue: #1565C0;
+      --amber: #E65100;
+      --violet: #6A1B9A;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.45);
+      font-family: "Open Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--ifmg-verde); text-decoration: none; }
+    a:hover { color: var(--ifmg-verde-dark); text-decoration: underline; }
+
+    .container {
+      width: min(1280px, calc(100% - 48px));
+      margin-inline: auto;
+      min-width: 0;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15, 17, 16, 0.96);
+      border-bottom: 3px solid var(--ifmg-verde);
+      backdrop-filter: blur(16px);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo-grid {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      background: var(--ifmg-verde);
+    }
+
+    .logo-grid span {
+      border-radius: 1px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .brand-text strong {
+      display: block;
+      color: var(--text);
+      font-size: 1.05rem;
+      line-height: 1.2;
+    }
+
+    .brand-text small {
+      display: block;
+      margin-top: -1px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .hero {
+      padding: 48px 0 32px;
+      background: linear-gradient(to bottom, var(--bg-alt), var(--bg));
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.86fr) minmax(440px, 1.14fr);
+      align-items: center;
+      gap: 38px;
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--ifmg-verde-dark);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 700px;
+      color: var(--text);
+      font-size: clamp(2rem, 4vw, 3.45rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: 0;
+      overflow-wrap: break-word;
+    }
+
+    .lead {
+      max-width: 650px;
+      margin: 16px 0 0;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 8px 16px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--ifmg-verde);
+      color: #FFFFFF;
+      border-color: var(--ifmg-verde);
+    }
+
+    .btn-primary:hover {
+      background: var(--ifmg-verde-dark);
+      color: #FFFFFF;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-2);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .note {
+      margin: 13px 0 0;
+      color: var(--text-subtle);
+      font-size: 0.86rem;
+    }
+
+    .app-preview {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .window {
+      overflow: hidden;
+      max-width: 100%;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .window.compact {
+      width: 88%;
+      justify-self: end;
+      box-shadow: var(--shadow-md);
+    }
+
+    .window-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 3px solid var(--ifmg-verde);
+      background: var(--surface);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .status-badge {
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: var(--ifmg-verde-light);
+      color: #1f6f31;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .status-badge.admin {
+      background: var(--ifmg-vermelho);
+      color: #FFFFFF;
+    }
+
+    .window-body {
+      padding: 16px;
+      background: var(--bg-alt);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .mini-hero h2 {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+      line-height: 1.2;
+    }
+
+    .mini-hero p {
+      max-width: 470px;
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat {
+      min-width: 104px;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat strong {
+      display: block;
+      color: var(--ifmg-verde);
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--text-subtle);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .filters {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      color: var(--text-subtle);
+      font-size: 0.85rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .chip::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.8;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+      min-width: 0;
+    }
+
+    .doc-card {
+      position: relative;
+      min-height: 96px;
+      padding: 12px 14px 12px 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .doc-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: var(--cat, var(--ifmg-verde));
+    }
+
+    .doc-card strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.86rem;
+      line-height: 1.3;
+    }
+
+    .doc-card span {
+      display: block;
+      margin-top: 6px;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+
+    .admin-panel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .toolbar,
+    .settings {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .tool {
+      min-height: 32px;
+      padding: 6px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .tool.primary {
+      border-color: var(--ifmg-verde);
+      background: var(--ifmg-verde);
+      color: #FFFFFF;
+    }
+
+    .field {
+      flex: 1 1 130px;
+      min-height: 34px;
+      padding: 6px 9px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text-muted);
+      font-size: 0.76rem;
+    }
+
+    section {
+      padding: 52px 0;
+      min-width: 0;
+    }
+
+    .band {
+      background: var(--bg-alt);
+      border-block: 1px solid var(--border);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      color: var(--text);
+      font-size: 1.65rem;
+      line-height: 1.2;
+    }
+
+    .section-head p {
+      max-width: 620px;
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .info-card,
+    .step {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .info-card strong,
+    .step strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 0.94rem;
+    }
+
+    .info-card p,
+    .step p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .step-number {
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      background: var(--ifmg-verde);
+      color: #FFFFFF;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .warning {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--ifmg-vermelho);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      color: var(--text-muted);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .hosting-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .hosting-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 96px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .footer {
+      padding: 26px 0;
+      border-top: 1px solid var(--border);
+      color: var(--text-subtle);
+      font-size: 0.86rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .split,
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .window.compact {
+        width: 100%;
+      }
+
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        width: min(calc(100% - 32px), 1280px);
+      }
+
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .hero {
+        padding-top: 42px;
+      }
+
+      h1 {
+        max-width: 100%;
+        font-size: 1.9rem;
+        line-height: 1.18;
+        overflow-wrap: anywhere;
+      }
+
+      .lead {
+        font-size: 1rem;
+      }
+
+      .window-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .window.compact {
+        justify-self: stretch;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .stat {
+        min-width: 0;
+      }
+
+      .search {
+        min-width: 0;
+        height: auto;
+        min-height: 38px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .actions .btn {
+        width: 100%;
+      }
+
+      .hosting-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .container {
+        width: min(calc(100% - 32px), 320px);
+        margin-left: 16px;
+        margin-right: auto;
+      }
+
+      .nav {
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        overflow-x: visible;
+      }
+
+      h1,
+      .lead,
+      .note {
+        max-width: 100%;
+      }
+
+      .app-preview,
+      .window {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo-grid" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div class="brand-text">
+          <strong>Portfolio Profissional</strong>
+          <small>Gestão local e publicação estática</small>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Navegação principal">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#bulk">Carga inicial</a>
+        <a href="#publicar">Publicar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Aplicativo Windows local-first</p>
+          <h1>Portfolio Profissional para organizar seus documentos</h1>
+          <p class="lead">
+            Cadastre, revise e filtre PDFs profissionais no seu computador. Quando estiver pronto, publique uma versão estática para hospedar onde preferir.
+          </p>
+          <div class="actions">
+          <a class="btn btn-primary" href="https://github.com/matheuscfrade/myPortfolio/releases/latest/download/PortfolioProfissionalSetup.exe">Baixar instalador Windows</a>
+          </div>
+          <p class="note">O Admin é privado e local. O site público contém apenas os arquivos que você decidir publicar.</p>
+        </div>
+
+        <div class="app-preview" aria-label="Prévia das páginas do aplicativo">
+          <div class="window">
+            <div class="window-header">
+              <span>Seu Nome</span>
+            </div>
+            <div class="window-body">
+              <div class="mini-hero">
+                <h2>Registro Documental</h2>
+                <p>Portarias, nomeações, comissões e atos administrativos organizados para consulta.</p>
+              </div>
+              <div class="stats">
+                <div class="stat"><strong>128</strong><span>Documentos</span></div>
+                <div class="stat"><strong>9</strong><span>Categorias</span></div>
+                <div class="stat"><strong>2018-2026</strong><span>Período</span></div>
+              </div>
+              <div class="filters">
+                <div class="search">Buscar por nome, assunto, número ou categoria...</div>
+                <div class="chips">
+                  <span class="chip">Comissão</span>
+                  <span class="chip">Cargo/Função</span>
+                  <span class="chip">Progressão</span>
+                </div>
+              </div>
+              <div class="cards-grid">
+                <article class="doc-card" style="--cat: var(--ifmg-verde)"><strong>Documento nº 001, de 2025</strong><span>Registro profissional revisado e categorizado.</span></article>
+                <article class="doc-card" style="--cat: var(--blue)"><strong>Comissão Permanente de Acompanhamento</strong><span>Categoria, data e visibilidade controladas no Admin.</span></article>
+                <article class="doc-card" style="--cat: var(--amber)"><strong>Progressão funcional</strong><span>PDF original preservado com busca por metadados.</span></article>
+                <article class="doc-card" style="--cat: var(--violet)"><strong>Grupo de Trabalho</strong><span>Filtros rápidos para consulta e conferência pública.</span></article>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="como-funciona">
+      <div class="container">
+        <div class="section-head">
+          <h2>Como funciona</h2>
+          <p>O app separa o trabalho privado de organização da página estática que pode ser publicada para outras pessoas.</p>
+        </div>
+        <div class="grid-3">
+          <article class="info-card"><strong>1. Admin local</strong><p>Abra o painel no Windows, importe PDFs, crie categorias e ajuste os dados sem enviar nada para a nuvem.</p></article>
+          <article class="info-card"><strong>2. Revisão de metadados</strong><p>Confira nome, assunto, número, data, categoria e visibilidade antes de liberar qualquer documento.</p></article>
+          <article class="info-card"><strong>3. Site público</strong><p>Gere uma pasta estática com a visualização pública, os dados publicados e os PDFs visíveis.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="bulk" class="band">
+      <div class="container">
+        <div class="section-head">
+          <h2>Carga inicial em massa</h2>
+          <p>Para começar com uma coleção grande, copie os PDFs para a pasta Documentos do aplicativo e sincronize a estrutura inicial no Admin.</p>
+        </div>
+        <div class="grid-4">
+          <article class="step"><span class="step-number">1</span><strong>Localize Documentos</strong><p>Abra a pasta de dados do aplicativo e entre em Documentos.</p></article>
+          <article class="step"><span class="step-number">2</span><strong>Copie PDFs</strong><p>Adicione vários arquivos de uma vez, se quiser organizando como Categoria/Ano.</p></article>
+          <article class="step"><span class="step-number">3</span><strong>Sincronize</strong><p>O app lê a pasta, atualiza a lista e prepara os cards para revisão.</p></article>
+          <article class="step"><span class="step-number">4</span><strong>Revise</strong><p>Ajuste metadados e visibilidade antes de publicar a versão externa.</p></article>
+        </div>
+        <div class="warning">
+          Copiar PDFs para Documentos não finaliza o cadastro. Depois de sincronizar, revise nome, assunto, data, categoria e visibilidade no painel Admin.
+        </div>
+      </div>
+    </section>
+
+    <section id="publicar">
+      <div class="container split">
+        <div>
+          <div class="section-head">
+            <h2>Publicação na Web</h2>
+            <p>O app local não torna nada público sozinho. A publicação acontece somente quando você envia os arquivos estáticos gerados para uma hospedagem.</p>
+          </div>
+          <div class="warning">
+            O painel Admin fica no seu computador. Para publicar de verdade, revise os documentos, execute Gerar_Pasta_Publica.bat e envie apenas os arquivos estáticos da pasta dist-publico para Cloudflare Pages, Netlify, GitHub Pages ou Vercel.
+          </div>
+        </div>
+        <div class="hosting-list" aria-label="Opções de hospedagem estática">
+          <div class="hosting-item"><strong>Cloudflare Pages</strong></div>
+          <div class="hosting-item"><strong>Netlify</strong></div>
+          <div class="hosting-item"><strong>GitHub Pages</strong></div>
+          <div class="hosting-item"><strong>Vercel</strong></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">Developed by Matheus Costa Frade</div>
+  </footer>
+</body>
+</html>

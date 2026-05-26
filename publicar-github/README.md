@@ -4,10 +4,10 @@ Conteudo pronto para publicar no GitHub Pages do repositorio `myPortfolio`.
 
 ## Antes de subir
 
-Gere o instalador Windows e copie para:
+Gere o instalador Windows e publique como asset de GitHub Release:
 
 ```text
-downloads/PortfolioProfissionalSetup.exe
+dist-installer/PortfolioProfissionalSetup.exe
 ```
 
 No projeto principal, o fluxo e:
@@ -22,10 +22,11 @@ Depois compile `packaging\installer.iss` no Inno Setup e rode:
 packaging\prepare_landing_download.ps1
 ```
 
-Esse script copia o instalador para `landing\downloads` e para `publicar-github\downloads`.
+O link da landing aponta para `releases/latest/download/PortfolioProfissionalSetup.exe`.
+Nao versione o instalador no repositorio.
 
 ## GitHub Pages
 
-Publique o conteudo desta pasta na raiz do repositorio `myPortfolio`.
+Publique o conteudo desta pasta na branch `gh-pages` do repositorio `myPortfolio`.
 
 Nao copie `Documentos`, `site`, `config`, `dist`, `dist-publico` ou `build` para o repositorio publico.

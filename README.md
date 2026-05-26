@@ -49,7 +49,8 @@ O pacote publico nao deve incluir o Admin nem o servidor Flask.
 ## Publicar a landing de download
 
 A landing para baixar o instalador fica em `publicar-github`.
-Ela deve conter apenas `index.html`, `README.md` e `downloads\PortfolioProfissionalSetup.exe`.
+Ela deve conter apenas `index.html` e `README.md`; o instalador deve ser publicado
+como asset de GitHub Release.
 Nao suba `Documentos`, `site`, `config`, `dist`, `dist-publico` ou `build` para o repositorio publico.
 
 ## Desenvolvimento

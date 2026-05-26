@@ -5,7 +5,7 @@ const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 
 assert.match(html, /Portfolio Profissional para organizar seus documentos/, 'landing should use the updated hero headline');
-assert.match(html, /href="downloads\/PortfolioProfissionalSetup\.exe" download/, 'installer button should point to the landing download artifact');
+assert.match(html, /href="https:\/\/github\.com\/matheuscfrade\/myPortfolio\/releases\/latest\/download\/PortfolioProfissionalSetup\.exe"/, 'installer button should point to the GitHub Release artifact');
 assert.match(html, /Copiar PDFs para Documentos não finaliza o cadastro\./, 'bulk upload warning should keep the required accented copy');
 assert.match(html, /<h2>Publicação na Web<\/h2>/, 'publication section should use the requested title');
 assert.match(html, /execute Gerar_Pasta_Publica\.bat e envie apenas os arquivos estáticos da pasta dist-publico para Cloudflare Pages, Netlify, GitHub Pages ou Vercel\./, 'publishing warning should reflect the current publication flow');

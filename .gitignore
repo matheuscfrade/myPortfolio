@@ -1,0 +1,41 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambientes e caches locais
+.venv/
+venv/
+env/
+.codex_tmp/
+.superpowers/
+docs/superpowers/
+tests/_tmp/
+.pytest_cache/
+
+# Dados pessoais e arquivos gerados pelo uso local
+Documentos/
+site/
+config/
+
+# Builds e distribuicoes geradas
+build/
+dist/
+dist-publico/
+dist-installer/
+*.spec.bak
+*.zip
+*.exe
+*.msi
+
+# Instalador publicado pela landing: gerar e anexar/releasear no fluxo de publicacao
+landing/downloads/*
+!landing/downloads/.gitkeep
+publicar-github/downloads/*
+!publicar-github/downloads/.gitkeep
+
+# Sistema operacional/editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/

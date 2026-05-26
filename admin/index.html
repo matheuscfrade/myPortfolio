@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Portfolio Profissional</title>
+  <meta name="description" content="Administracao local de portfolio documental.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo-grid" aria-hidden="true">
+          <span></span><span></span>
+          <span></span><span></span>
+        </div>
+        <div class="brand-text">
+          <h1 data-config="displayName">Seu Nome</h1>
+          <small data-config="subtitle">Portfolio Profissional</small>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; font-size:0.8rem; color:var(--text-muted)">
+        <span style="background:#CD191E;color:white;padding:2px 9px;border-radius:999px;font-weight:600">ADMIN</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h2>Administração do Portfólio</h2>
+      <p class="hero-lead">
+        Use os botões de edição nos cards, importe PDFs e sincronize o site público.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number" id="stat-total">—</div>
+          <div class="stat-label">Documentos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="stat-cats">—</div>
+          <div class="stat-label">Categorias</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="stat-years">—</div>
+          <div class="stat-label">Período</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container section">
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filters-row">
+        <!-- Search -->
+        <div class="search-wrapper">
+          <input id="search" type="search" placeholder="Buscar por nome, assunto, número ou categoria..." autocomplete="off">
+        </div>
+
+        <!-- Year Range -->
+        <div class="year-range">
+          <span>De</span>
+          <input id="year-min" type="number" placeholder="2010" min="2005" max="2030">
+          <span>até</span>
+          <input id="year-max" type="number" placeholder="2026" min="2005" max="2030">
+        </div>
+
+        <div class="filter-actions" style="gap:8px;">
+          <button id="btn-importar" class="btn btn-primary" type="button">＋ Importar PDF</button>
+          <button id="btn-sync" class="btn btn-secondary" type="button" title="Sincronizar site público">🔄 Sincronizar</button>
+          <button id="btn-open-documents" class="btn btn-secondary" type="button">Abrir pasta Documentos</button>
+          <button id="btn-public-package" class="btn btn-secondary" type="button">Gerar pacote público</button>
+          <button id="clear-filters" class="btn btn-secondary" type="button">Limpar filtros</button>
+          <label id="show-hidden-wrapper" style="display:none; align-items:center; gap:6px; font-size:0.8rem; margin-left:8px; cursor:pointer;">
+            <input type="checkbox" id="show-hidden-toggle">
+            <span>Mostrar ocultos</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Category Chips -->
+      <div style="margin-top:14px">
+        <div style="font-size:0.72rem;color:var(--text-subtle);margin-bottom:6px;font-weight:600;letter-spacing:0.03em">CATEGORIAS</div>
+        <div id="category-chips" class="category-chips"></div>
+      </div>
+
+      <div class="category-create" aria-label="Criar nova categoria">
+        <div class="category-create-fields">
+          <input id="new-category-name" type="text" placeholder="Nova categoria" autocomplete="off">
+          <input id="new-category-color" type="color" value="#546E7A" aria-label="Cor da categoria">
+          <button id="btn-create-category" class="btn btn-secondary" type="button">Criar categoria</button>
+        </div>
+        <small id="category-create-status" class="form-hint"></small>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-bar">
+      <div>
+        <span id="results-count" class="results-count">Carregando…</span>
+      </div>
+      <div style="font-size:0.75rem;color:var(--text-subtle)">
+        Pressione <kbd style="background:#eee;padding:1px 5px;border-radius:3px;font-size:0.7em">/</kbd> para buscar
+      </div>
+    </div>
+
+    <div id="selection-bar" class="selection-bar" aria-label="Exportação de documentos selecionados">
+      <span id="selection-count" class="selection-count">0 selecionados</span>
+      <div class="selection-actions">
+        <button id="selection-select-visible" class="btn btn-secondary" type="button">Selecionar visíveis</button>
+        <button id="selection-clear" class="btn btn-secondary" type="button">Limpar seleção</button>
+        <button id="selection-export" class="btn btn-primary" type="button">Exportar selecionados</button>
+      </div>
+    </div>
+
+    <!-- Cards -->
+    <div id="cards-grid" class="cards-grid"></div>
+
+    <div id="loading" class="loading">
+      Carregando portfólio a partir dos dados existentes…
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h3 id="modal-title">Detalhes do Documento</h3>
+        <button id="modal-close" class="btn btn-ghost" style="font-size:1.4rem;line-height:1;padding:0 8px" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-body" class="modal-body">
+        <!-- Populated by JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('open')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import PDF Modal -->
+  <div id="modal-import" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" style="max-width:520px;">
+      <div class="modal-header">
+        <h3>Importar novo PDF</h3>
+        <button id="import-modal-close" class="btn btn-ghost" style="font-size:1.4rem;line-height:1;padding:0 8px" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="import-form" onsubmit="return false;">
+          <div>
+            <label>Arquivo PDF *</label>
+            <div class="file-drop-area">
+              <label for="import-file" class="file-drop-button">
+                Selecionar PDF
+              </label>
+              <div class="file-info">
+                <span id="import-filename">Nenhum arquivo selecionado</span>
+              </div>
+              <input type="file" id="import-file" accept=".pdf,application/pdf" hidden>
+            </div>
+            <small class="form-hint">O arquivo será salvo na estrutura de pastas automaticamente.</small>
+          </div>
+
+          <div>
+            <label for="import-nome">Nome do documento *</label>
+            <input type="text" id="import-nome" placeholder="Ex: Portaria nº 100, de 01 de janeiro de 2025">
+          </div>
+
+          <div>
+            <label for="import-assunto">Assunto</label>
+            <textarea id="import-assunto" rows="2" placeholder="Descrição curta do assunto"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label for="import-categoria">Categoria *</label>
+              <select id="import-categoria">
+                <option value="Comissão">Comissão</option>
+                <option value="Cargo/Função">Cargo/Função</option>
+                <option value="Progressão">Progressão</option>
+                <option value="Fiscal de Contrato">Fiscal de Contrato</option>
+                <option value="Conselho Superior">Conselho Superior</option>
+                <option value="Grupo de Trabalho">Grupo de Trabalho</option>
+                <option value="Colegiado">Colegiado</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div>
+              <label for="import-ano">Ano *</label>
+              <input type="number" id="import-ano" placeholder="2025" min="2000" max="2035">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div>
+              <label for="import-data">Data (AAAA-MM-DD)</label>
+              <input type="date" id="import-data">
+            </div>
+            <div>
+              <label for="import-numero">Número</label>
+              <input type="text" id="import-numero" placeholder="1234">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer" style="display:flex; gap:8px; justify-content:flex-end;">
+        <button class="btn btn-secondary" id="btn-cancel-import">Cancelar</button>
+        <button class="btn btn-primary" id="btn-confirm-import">Importar PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 
+    Data is loaded dynamically by main.js (supports both server and direct file open).
+    No static script tag for dados.js to avoid 404 issues in different environments.
+  -->
+  <script src="main.js"></script>
+</body>
+</html>

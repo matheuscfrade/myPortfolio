@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio Profissional</title>
+  <meta name="description" content="Visualizacao publica de portfolio documental.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo-grid" aria-hidden="true">
+          <span></span><span></span>
+          <span></span><span></span>
+        </div>
+        <div class="brand-text">
+          <h1 data-config="displayName">Seu Nome</h1>
+          <small data-config="subtitle">Portfolio Profissional</small>
+        </div>
+      </div>
+
+      <div class="admin-access">
+        <span id="public-badge" class="status-badge public">Visualização Pública</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h2>Registro Documental</h2>
+      <p class="hero-lead">
+        Portarias, nomeações, comissões e atos administrativos publicados nos Boletins de Serviço do IFMG —
+        Instituto Federal de Educação, Ciência e Tecnologia de Minas Gerais.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number" id="stat-total">—</div>
+          <div class="stat-label">Documentos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="stat-cats">—</div>
+          <div class="stat-label">Categorias</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="stat-years">—</div>
+          <div class="stat-label">Período</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container section">
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filters-row">
+        <!-- Search -->
+        <div class="search-wrapper">
+          <input id="search" type="search" placeholder="Buscar por nome, assunto, número ou categoria..." autocomplete="off">
+        </div>
+
+        <!-- Year Range -->
+        <div class="year-range">
+          <span>De</span>
+          <input id="year-min" type="number" placeholder="2010" min="2005" max="2030">
+          <span>até</span>
+          <input id="year-max" type="number" placeholder="2026" min="2005" max="2030">
+        </div>
+
+        <div class="filter-actions">
+          <button id="clear-filters" class="btn btn-secondary" type="button">Limpar filtros</button>
+        </div>
+      </div>
+
+      <!-- Category Chips -->
+      <div style="margin-top:14px">
+        <div style="font-size:0.72rem;color:var(--text-subtle);margin-bottom:6px;font-weight:600;letter-spacing:0.03em">CATEGORIAS</div>
+        <div id="category-chips" class="category-chips"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-bar">
+      <div>
+        <span id="results-count" class="results-count">Carregando…</span>
+      </div>
+      <div style="font-size:0.75rem;color:var(--text-subtle)">
+        Pressione <kbd style="background:#eee;padding:1px 5px;border-radius:3px;font-size:0.7em">/</kbd> para buscar
+      </div>
+    </div>
+
+    <div id="selection-bar" class="selection-bar" aria-label="Exportação de documentos selecionados">
+      <span id="selection-count" class="selection-count">0 selecionados</span>
+      <div class="selection-actions">
+        <button id="selection-select-visible" class="btn btn-secondary" type="button">Selecionar visíveis</button>
+        <button id="selection-clear" class="btn btn-secondary" type="button">Limpar seleção</button>
+        <button id="selection-export" class="btn btn-primary" type="button">Exportar selecionados</button>
+      </div>
+    </div>
+
+    <!-- Cards -->
+    <div id="cards-grid" class="cards-grid"></div>
+
+    <div id="loading" class="loading">
+      Carregando portfólio a partir dos dados existentes…
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h3 id="modal-title">Detalhes do Documento</h3>
+        <button id="modal-close" class="btn btn-ghost" style="font-size:1.4rem;line-height:1;padding:0 8px" aria-label="Fechar">×</button>
+      </div>
+      <div id="modal-body" class="modal-body">
+        <!-- Populated by JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('open')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    Data is loaded dynamically by main.js (supports both server and direct file open).
+    No static script tag for dados.js to avoid 404 issues in different environments.
+  -->
+  <script src="main.js"></script>
+</body>
+</html>

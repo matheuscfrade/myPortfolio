@@ -7,6 +7,9 @@ Este diretorio contem os arquivos para gerar o EXE e o instalador Windows.
 - Python instalado e disponivel como `python`.
 - Inno Setup instalado para compilar `installer.iss`.
 
+O instalador e por usuario: ele instala em `%LOCALAPPDATA%\Programs\Portfolio Profissional`
+e grava os dados mutaveis em `%LOCALAPPDATA%\Portfolio Profissional`.
+
 ## Gerar EXE
 
 No PowerShell, a partir da raiz do projeto:

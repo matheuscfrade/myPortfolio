@@ -6,13 +6,14 @@
 AppId={{3B0D59D8-26F4-4A19-9B0E-72B2F9D2C7A1}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-DefaultDirName={autopf}\Portfolio Profissional
+DefaultDirName={localappdata}\Programs\Portfolio Profissional
 DefaultGroupName=Portfolio Profissional
 OutputDir=..\dist-installer
 OutputBaseFilename=PortfolioProfissionalSetup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+PrivilegesRequired=lowest
 
 [Languages]
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
@@ -25,7 +26,7 @@ Source: "..\dist\PortfolioProfissional\*"; DestDir: "{app}"; Flags: recursesubdi
 
 [Icons]
 Name: "{group}\Abrir Portfolio Profissional"; Filename: "{app}\{#MyAppExeName}"
-Name: "{commondesktop}\Portfolio Profissional"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userdesktop}\Portfolio Profissional"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 Name: "{group}\Abrir pasta de dados"; Filename: "{localappdata}\Portfolio Profissional"
 
 [Run]

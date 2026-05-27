@@ -531,6 +531,15 @@
     });
   }
 
+  function getCategoryOptionsWithCounts(options, counts = {}) {
+    return options
+      .map(item => ({
+        ...item,
+        count: counts[item.nome] || 0
+      }))
+      .filter(item => item.count > 0);
+  }
+
   // --- Filtering ---
   function applyFilters() {
     const q = (searchInput.value || '').trim().toLowerCase();
@@ -611,17 +620,18 @@
     if (!chipsContainer) return;
     chipsContainer.innerHTML = '';
 
-    const cats = getCategoryOptions().map(item => item.nome);
     const counts = getCurrentCategoryCounts();
+    const cats = getCategoryOptionsWithCounts(getCategoryOptions(), counts);
 
-    cats.forEach(cat => {
+    cats.forEach(item => {
+      const cat = item.nome;
       const chip = document.createElement('button');
       chip.className = 'chip';
       chip.dataset.category = cat;
       chip.innerHTML = `
         <span class="dot" style="background:${getCategoryColor(cat)}"></span>
         <span>${escapeHtml(cat)}</span>
-        <span style="opacity:0.6;font-size:0.75em">(${counts[cat] || 0})</span>
+        <span style="opacity:0.6;font-size:0.75em">(${item.count})</span>
       `;
 
       if (activeCategories.has(cat)) chip.classList.add('active');
@@ -1557,6 +1567,7 @@
   window.__portfolioAdminTest = {
     getCategoryOptions,
     getCategoryCountsForFilters,
+    getCategoryOptionsWithCounts,
     normalizeCategoryName,
     registerCategory,
     buildExportPayload,

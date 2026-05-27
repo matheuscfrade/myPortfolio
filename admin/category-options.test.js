@@ -104,6 +104,19 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
+  JSON.parse(JSON.stringify(context.__portfolioAdminTest.getCategoryOptionsWithCounts([
+    { nome: 'Visivel' },
+    { nome: 'So Oculto' },
+    { nome: 'Vazia' }
+  ], {
+    Visivel: 2,
+    'So Oculto': 0
+  }))),
+  [{ nome: 'Visivel', count: 2 }],
+  'admin category chips should hide categories with zero visible documents'
+);
+
+assert.deepEqual(
   JSON.parse(JSON.stringify(context.__portfolioAdminTest.buildExportPayload([
     {
       nome: 'VisÃ­vel',

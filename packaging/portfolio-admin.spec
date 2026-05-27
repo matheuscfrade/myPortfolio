@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+
 
 ROOT = Path.cwd()
 
@@ -12,13 +14,14 @@ datas = [
     (str(ROOT / "scripts" / "app_runtime.py"), "scripts"),
     (str(ROOT / "scripts" / "create_public_package.py"), "scripts"),
 ]
+datas += collect_data_files("PIL")
 
 a = Analysis(
     [str(ROOT / "scripts" / "servidor_admin.py")],
     pathex=[str(ROOT / "scripts")],
     binaries=[],
     datas=datas,
-    hiddenimports=["pypdf", "openpyxl"],
+    hiddenimports=["pypdf", "openpyxl", *collect_submodules("PIL")],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

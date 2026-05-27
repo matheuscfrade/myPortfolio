@@ -22,7 +22,7 @@ No painel Admin voce pode:
 - criar categorias;
 - abrir a pasta `Documentos`;
 - sincronizar dados;
-- gerar a pasta publica para hospedagem estatica com `Gerar_Pasta_Publica.bat`.
+- gerar a pasta publica para hospedagem estatica pelo botao **Gerar pacote publico**.
 
 ## Carga inicial em massa
 
@@ -41,7 +41,7 @@ Copiar PDFs para `Documentos` nao finaliza o cadastro. Depois de sincronizar, re
 O painel Admin fica apenas no computador local. Para publicar:
 
 1. Revise documentos e visibilidade.
-2. Execute `Gerar_Pasta_Publica.bat`.
+2. No Admin, clique em **Gerar pacote publico**.
 3. Envie a pasta `dist-publico` para GitHub Pages, Netlify, Vercel, Cloudflare Pages ou outro servico de hospedagem estatica.
 
 O pacote publico nao deve incluir o Admin nem o servidor Flask.
@@ -65,7 +65,7 @@ python scripts\servidor_admin.py
 Acesse:
 
 - Admin: `http://127.0.0.1:5000/admin/`
-- Portfolio: `http://127.0.0.1:5000/portfolio/`
+O app instalado abre apenas o Admin local. A visualizacao publica e gerada dentro da pasta `dist-publico` quando voce cria o pacote publico.
 
 ## Build Windows
 

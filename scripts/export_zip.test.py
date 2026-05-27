@@ -132,6 +132,21 @@ def test_public_package_api_creates_output_folder():
     assert "dist-publico" in response.json["path"]
 
 
+def test_local_public_portfolio_routes_redirect_to_admin():
+    client = servidor_admin.app.test_client()
+
+    root = client.get("/")
+    portfolio = client.get("/portfolio/")
+    portfolio_asset = client.get("/portfolio/index.html")
+
+    assert root.status_code == 302
+    assert root.headers["Location"] == "/admin/"
+    assert portfolio.status_code == 302
+    assert portfolio.headers["Location"] == "/admin/"
+    assert portfolio_asset.status_code == 302
+    assert portfolio_asset.headers["Location"] == "/admin/"
+
+
 def test_sync_does_not_spawn_subprocess():
     sentinel = type("SubprocessSentinel", (), {})()
 
@@ -160,4 +175,5 @@ if __name__ == "__main__":
     test_exportar_rejects_unsafe_paths()
     test_config_api_is_read_only_and_shared_config_uses_installer_file()
     test_public_package_api_creates_output_folder()
+    test_local_public_portfolio_routes_redirect_to_admin()
     test_sync_does_not_spawn_subprocess()

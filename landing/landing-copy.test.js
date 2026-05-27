@@ -8,7 +8,7 @@ assert.match(html, /Portfolio Profissional para organizar seus documentos/, 'lan
 assert.match(html, /href="https:\/\/github\.com\/matheuscfrade\/myPortfolio\/releases\/latest\/download\/PortfolioProfissionalSetup\.exe"/, 'installer button should point to the GitHub Release artifact');
 assert.match(html, /Copiar PDFs para Documentos não finaliza o cadastro\./, 'bulk upload warning should keep the required accented copy');
 assert.match(html, /<h2>Publicação na Web<\/h2>/, 'publication section should use the requested title');
-assert.match(html, /execute Gerar_Pasta_Publica\.bat e envie apenas os arquivos estáticos da pasta dist-publico para Cloudflare Pages, Netlify, GitHub Pages ou Vercel\./, 'publishing warning should reflect the current publication flow');
+assert.match(html, /clique em Gerar pacote público no Admin e envie apenas os arquivos estáticos da pasta dist-publico para Cloudflare Pages, Netlify, GitHub Pages ou Vercel\./, 'publishing warning should reflect the current Admin button flow');
 assert.doesNotMatch(html, /Ver como publicar|Publicação realmente pública/, 'landing should not include removed publishing copy');
 assert.doesNotMatch(html, /Melhor para upload direto|Mais simples para arrastar|Bom para manter histórico|Bom para projetos/, 'hosting cards should not include subjective interpretations');
 assert.match(html, /<div class="hosting-item"><strong>Cloudflare Pages<\/strong><\/div>/, 'Cloudflare hosting card should show only the service name');
@@ -18,7 +18,7 @@ assert.match(html, /Developed by Matheus Costa Frade/, 'landing should use the r
 assert.doesNotMatch(html, /Visualização Pública/, 'landing should not show the public badge');
 assert.doesNotMatch(html, /Administração do Portfólio/, 'landing should not show the admin preview section');
 assert.doesNotMatch(html, /O que vem no instalador|Para quem é/, 'landing should not include removed sections');
-assert.doesNotMatch(html, /Gerar Pacote Público|Gerar pacote público|Abrir pasta Documentos|botão do Admin/, 'landing should not mention removed admin buttons');
+assert.doesNotMatch(html, /Gerar_Pasta_Publica\.bat|Abrir pasta Documentos/, 'landing should not tell users to run local scripts or unrelated admin buttons');
 assert.doesNotMatch(html, /Feito com base no projeto original|O app instalado usa o nome informado pelo usuário/, 'landing should not use the old footer credit');
 assert.match(html, /--bg:\s*#0F1110/i, 'landing should default to the same dark background as the app');
 assert.match(html, /--surface:\s*#1C1F1D/i, 'landing should default to dark app surfaces');

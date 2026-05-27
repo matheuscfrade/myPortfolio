@@ -87,7 +87,7 @@ def update_pdf_metadata(file_path, novo_nome, novo_assunto):
 
 @app.route('/')
 def index():
-    return redirect('/portfolio/')
+    return redirect('/admin/')
 
 # Specific routes MUST come before the broad catch-all below
 @app.route('/Documentos/<path:filename>')
@@ -233,9 +233,7 @@ def gerar_pacote_publico():
 @app.route('/portfolio/')
 @app.route('/portfolio/<path:filename>')
 def serve_public_site(filename=None):
-    if filename is None:
-        filename = 'index.html'
-    return send_from_directory(PUBLIC_SITE_DIR, filename)
+    return redirect('/admin/')
 
 
 # --- Administration frontend ---
@@ -504,8 +502,8 @@ def editar():
 if __name__ == '__main__':
     print("="*60)
     print("Servidor de Administração Local do Portfólio IFMG")
-    print("  • Site público:   http://localhost:5000/portfolio/")
     print("  • Administração:  http://localhost:5000/admin/")
+    print("  • Publicação: gere o pacote público pelo botão do Admin")
     print("="*60)
     print()
     host = os.environ.get("PORTFOLIO_HOST", "127.0.0.1")

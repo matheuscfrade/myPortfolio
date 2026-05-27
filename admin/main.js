@@ -132,7 +132,7 @@
       if (!response.ok) {
         throw new Error(data.error || 'Nao foi possivel gerar o pacote publico.');
       }
-      alert(`Pacote público criado em:\n${data.path}\n\nEnvie essa pasta para GitHub Pages, Netlify, Vercel ou Cloudflare Pages para publicar de verdade.`);
+      alert(`Pacote público criado em:\n${data.path}\n\nEnvie essa pasta para GitHub Pages, Netlify, Vercel ou Cloudflare Pages para publicar de verdade. Esta é a versão pública do portfólio.`);
     } catch (e) {
       alert(e.message || 'Nao foi possivel gerar o pacote publico.');
     } finally {
@@ -1400,7 +1400,7 @@
       const btnSync = document.getElementById('btn-sync');
       if (btnSync) {
         btnSync.addEventListener('click', async () => {
-          if (!confirm('Sincronizar o site público agora? Isso vai aplicar todas as edições.')) return;
+          if (!confirm('Sincronizar os dados agora? Isso vai aplicar todas as edições no Admin.')) return;
 
           btnSync.disabled = true;
           const originalText = btnSync.innerHTML;
@@ -1409,7 +1409,7 @@
           try {
             const resp = await fetch('/api/sync', { method: 'POST' });
             if (resp.ok) {
-              alert('Sincronização concluída com sucesso!\n\nO arquivo site/dados.js foi regenerado. Se você copiou PDFs em massa para Documentos, revise nome, assunto, data, categoria e visibilidade dos novos cards antes de publicar.\n\nRecarregando os dados nesta tela...');
+              alert('Sincronização concluída com sucesso!\n\nOs dados foram regenerados. Se você copiou PDFs em massa para Documentos, revise nome, assunto, data, categoria e visibilidade dos novos cards. Quando estiver tudo certo, clique em "Gerar pacote público" para criar a versão que será hospedada.\n\nRecarregando os dados nesta tela...');
               
               // Reload data in current admin UI so changes are visible immediately
               await loadData();
@@ -1422,7 +1422,7 @@
                 const data = await resp.json();
                 const details = data.details || data.error;
                 if (resp.status === 403) {
-                  message += '\n\nO servidor ainda está rodando uma versão antiga com bloqueio de acesso. Feche e abra novamente o iniciar_admin.bat.';
+                  message += '\n\nO servidor ainda está rodando uma versão antiga com bloqueio de acesso. Feche e abra novamente o Portfolio Profissional.';
                 } else if (details) {
                   message += `\n\n${details}`;
                 }

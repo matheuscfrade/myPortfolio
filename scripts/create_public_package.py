@@ -1,9 +1,34 @@
 import json
+import os
 import shutil
+import stat
+import time
 from pathlib import Path
 
 
 SHARED_FILES = ("dados.js", "edicoes.json", "ocultos.json", "categorias.json")
+SKIPPED_PUBLIC_FILES = {"README.md"}
+
+
+def handle_remove_error(function, path, exc_info):
+    try:
+        os.chmod(path, stat.S_IWRITE)
+        function(path)
+    except Exception:
+        raise exc_info[1]
+
+
+def remove_tree(path: Path) -> None:
+    if not path.exists():
+        return
+    for attempt in range(3):
+        try:
+            shutil.rmtree(path, onerror=handle_remove_error)
+            return
+        except PermissionError:
+            if attempt == 2:
+                raise
+            time.sleep(0.4)
 
 
 def read_hidden_documents(site_dir: Path) -> set[str]:
@@ -24,6 +49,8 @@ def copy_tree_contents(source: Path, destination: Path) -> None:
         return
     destination.mkdir(parents=True, exist_ok=True)
     for item in source.iterdir():
+        if item.name in SKIPPED_PUBLIC_FILES:
+            continue
         target = destination / item.name
         if item.is_dir():
             shutil.copytree(item, target, dirs_exist_ok=True)
@@ -51,7 +78,7 @@ def create_public_package(root: Path | str, output_dir: Path | str, public_site_
     config_file = root / "config" / "app.json"
 
     if output_dir.exists():
-        shutil.rmtree(output_dir)
+        remove_tree(output_dir)
     output_dir.mkdir(parents=True)
 
     copy_tree_contents(public_site, output_dir)

@@ -2,6 +2,9 @@ import json
 import os
 import re
 import shutil
+import sys
+import threading
+import webbrowser
 import zipfile
 from datetime import datetime
 from io import BytesIO
@@ -118,6 +121,13 @@ def sync_data() -> None:
     from gerar_dados import main as gerar_dados_main
 
     gerar_dados_main()
+
+
+def create_public_package_for_runtime() -> Path:
+    from create_public_package import create_public_package
+
+    output = RUNTIME.data_dir / "dist-publico"
+    return create_public_package(RUNTIME.data_dir, output, public_site_dir=PUBLIC_SITE_DIR)
 
 
 def count_catalogable_pdfs() -> int:
@@ -487,11 +497,24 @@ def exportar():
 
 @app.route("/api/gerar-pacote-publico", methods=["POST"])
 def gerar_pacote_publico():
-    from create_public_package import create_public_package
+    try:
+        output = create_public_package_for_runtime()
+        return jsonify({"success": True, "path": str(output)})
+    except Exception as error:
+        print(f"[ERRO] Falha ao gerar pacote publico: {error}")
+        return jsonify({"error": str(error)}), 500
 
-    output = RUNTIME.data_dir / "dist-publico"
-    create_public_package(RUNTIME.data_dir, output, public_site_dir=PUBLIC_SITE_DIR)
-    return jsonify({"success": True, "path": str(output)})
+
+def schedule_admin_browser(host: str, port: int) -> None:
+    if os.environ.get("PORTFOLIO_OPEN_BROWSER") == "0":
+        return
+    if not getattr(sys, "frozen", False) and os.environ.get("PORTFOLIO_OPEN_BROWSER") != "1":
+        return
+
+    def open_browser():
+        webbrowser.open(f"http://{host}:{port}/admin/")
+
+    threading.Timer(1.0, open_browser).start()
 
 
 if __name__ == "__main__":
@@ -502,4 +525,5 @@ if __name__ == "__main__":
     print("=" * 60)
     host = os.environ.get("PORTFOLIO_HOST", "127.0.0.1")
     port = int(os.environ.get("PORTFOLIO_PORT", "5000"))
+    schedule_admin_browser(host, port)
     app.run(host=host, port=port)

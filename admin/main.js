@@ -382,27 +382,47 @@
     });
   }
 
+  function withCacheBust(url) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}v=${Date.now()}`;
+  }
+
+  async function loadDataFromText(src) {
+    const response = await fetch(withCacheBust(src), { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error('Falha ao carregar ' + src);
+    }
+    const text = await response.text();
+    const docs = Function(`${text}\n; return DOCUMENTOS;`)();
+    return Array.isArray(docs) ? docs : [];
+  }
+
   // --- Data Loading & Merging (respects existing edicoes + ocultos) ---
   async function loadData() {
     let baseDocs = [];
     const dadosUrl = `${SHARED_DATA_BASE}dados.js`;
 
-    // Always use dynamic script injection for DOCUMENTOS. This guarantees that
-    // Load documents from direct file:// or from the admin server.
-    try {
-      await loadDataScript(dadosUrl);
-      if (typeof DOCUMENTOS !== 'undefined') {
-        baseDocs = DOCUMENTOS;
-      } else {
-        console.warn('[admin] Script loaded but DOCUMENTOS global not found after', dadosUrl);
+    if (IS_HTTP) {
+      try {
+        baseDocs = await loadDataFromText(dadosUrl);
+      } catch (e) {
+        console.warn('[admin] Failed to load data via fetch', dadosUrl, e);
       }
-    } catch (e) {
-      console.warn('[admin] Failed to load data via script', dadosUrl, e);
-      // Last-resort (rare): a static tag was manually added to the HTML
-      if (typeof DOCUMENTOS !== 'undefined') {
-        baseDocs = DOCUMENTOS;
-      } else if (typeof window !== 'undefined' && typeof window.DOCUMENTOS !== 'undefined') {
-        baseDocs = window.DOCUMENTOS;
+    } else {
+      try {
+        await loadDataScript(withCacheBust(dadosUrl));
+        if (typeof DOCUMENTOS !== 'undefined') {
+          baseDocs = DOCUMENTOS;
+        } else {
+          console.warn('[admin] Script loaded but DOCUMENTOS global not found after', dadosUrl);
+        }
+      } catch (e) {
+        console.warn('[admin] Failed to load data via script', dadosUrl, e);
+        if (typeof DOCUMENTOS !== 'undefined') {
+          baseDocs = DOCUMENTOS;
+        } else if (typeof window !== 'undefined' && typeof window.DOCUMENTOS !== 'undefined') {
+          baseDocs = window.DOCUMENTOS;
+        }
       }
     }
 
@@ -412,9 +432,9 @@
 
     try {
       const [edRes, ocRes, catRes] = await Promise.allSettled([
-        fetch(`${SHARED_DATA_BASE}edicoes.json`),
-        fetch(`${SHARED_DATA_BASE}ocultos.json`),
-        fetch(`${SHARED_DATA_BASE}categorias.json`)
+        fetch(withCacheBust(`${SHARED_DATA_BASE}edicoes.json`), { cache: 'no-store' }),
+        fetch(withCacheBust(`${SHARED_DATA_BASE}ocultos.json`), { cache: 'no-store' }),
+        fetch(withCacheBust(`${SHARED_DATA_BASE}categorias.json`), { cache: 'no-store' })
       ]);
 
       if (edRes.status === 'fulfilled' && edRes.value.ok) {

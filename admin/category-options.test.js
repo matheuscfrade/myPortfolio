@@ -15,6 +15,8 @@ assert.doesNotMatch(stylesCss, /prefers-color-scheme:\s*dark/, 'admin should not
 assert.match(stylesCss, /--bg:\s*#0F1110/i, 'admin should default to the dark theme background');
 assert.match(mainJs, /Não Categorizado/, 'admin should expose the triage category for manually copied PDFs');
 assert.match(mainJs, /modal-delete-btn/, 'document detail modal should expose a delete action');
+assert.match(mainJs, /loadDataFromText/, 'admin should reload dados.js from text to avoid stale DOCUMENTOS after sync');
+assert.match(mainJs, /cache:\s*'no-store'/, 'admin should bypass browser cache when reloading shared data');
 
 const context = {
   console,

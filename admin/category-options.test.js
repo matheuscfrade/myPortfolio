@@ -5,11 +5,16 @@ const vm = require('node:vm');
 
 const mainJs = fs.readFileSync(path.join(__dirname, 'main.js'), 'utf8');
 const indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const stylesCss = fs.readFileSync(path.join(__dirname, 'styles.css'), 'utf8');
 
 assert.doesNotMatch(indexHtml, /config-display-name|config-subtitle|config-portfolio-title|btn-save-config/, 'admin should not expose installer identity settings');
 assert.doesNotMatch(indexHtml, /Configura(?:c|ç)(?:o|õ)es do portfolio|Nome exibido|Titulo do site|Salvar configura/, 'admin should not show configuration copy');
 assert.match(indexHtml, /btn-open-documents/, 'admin should keep operational document-folder action');
 assert.match(indexHtml, /btn-public-package/, 'admin should keep public package action');
+assert.doesNotMatch(stylesCss, /prefers-color-scheme:\s*dark/, 'admin should not depend on the OS/browser theme to use dark mode');
+assert.match(stylesCss, /--bg:\s*#0F1110/i, 'admin should default to the dark theme background');
+assert.match(mainJs, /Não Categorizado/, 'admin should expose the triage category for manually copied PDFs');
+assert.match(mainJs, /modal-delete-btn/, 'document detail modal should expose a delete action');
 
 const context = {
   console,
@@ -69,6 +74,11 @@ assert.ok(
 assert.ok(
   options.some(item => item.nome === 'Comitê' && item.color === '#546E7A'),
   'saved custom categories should appear in the options list'
+);
+
+assert.ok(
+  options.some(item => item.nome === 'Não Categorizado' && item.color === '#546E7A'),
+  'triage category should appear in the options list'
 );
 
 const docs = [

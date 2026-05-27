@@ -58,10 +58,11 @@
     'Conselho Superior':      { icon: '🏛️', color: '#00838F' },
     'Grupo de Trabalho':      { icon: '🔧', color: '#F57F17' },
     'Colegiado':              { icon: '🎓', color: '#AD1457' },
+    'Não Categorizado':       { icon: '📥', color: '#546E7A' },
     'Outro':                  { icon: '📄', color: '#546E7A' }
   };
 
-  const CATEGORY_ORDER = ['Cargo/Função', 'Conselho Superior', 'Colegiado', 'Comissão', 'Grupo de Trabalho', 'Fiscal de Contrato', 'Progressão', 'Outro'];
+  const CATEGORY_ORDER = ['Cargo/Função', 'Conselho Superior', 'Colegiado', 'Comissão', 'Grupo de Trabalho', 'Fiscal de Contrato', 'Progressão', 'Não Categorizado', 'Outro'];
 
   // --- Utilities ---
   function escapeHtml(str = '') {
@@ -823,6 +824,7 @@
           <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; border-bottom:1px solid var(--border); padding-bottom:12px;">
             <button class="btn btn-primary" id="modal-edit-btn" style="padding:6px 14px; font-size:0.85rem;">✏️ Editar</button>
             <button class="btn btn-secondary" id="modal-hide-btn" style="padding:6px 14px; font-size:0.85rem;">${hideText}</button>
+            <button class="btn btn-secondary btn-danger" id="modal-delete-btn" style="padding:6px 14px; font-size:0.85rem;">Excluir</button>
           </div>
 
           <div style="margin-bottom:16px">
@@ -870,6 +872,7 @@
     } else {
       const editBtn = document.getElementById('modal-edit-btn');
       const hideBtn = document.getElementById('modal-hide-btn');
+      const deleteBtn = document.getElementById('modal-delete-btn');
       if (editBtn) editBtn.addEventListener('click', () => renderModalContent('edit'), { once: true });
       if (hideBtn) {
         hideBtn.addEventListener('click', async () => {
@@ -877,6 +880,7 @@
           renderModalContent('view');
         }, { once: true });
       }
+      if (deleteBtn) deleteBtn.addEventListener('click', deleteCurrentDocument, { once: true });
     }
 
     const onKey = (e) => {
@@ -970,7 +974,7 @@
 
     const nome = (importNome && importNome.value || '').trim();
     const assunto = (importAssunto && importAssunto.value || '').trim();
-    const categoria = importCategoria ? importCategoria.value : 'Outro';
+    const categoria = importCategoria ? importCategoria.value : 'Não Categorizado';
     const ano = importAno ? parseInt(importAno.value) || 0 : 0;
     const dataVal = (importData && importData.value) || `${ano}-01-01`;
     const numero = (importNumero && importNumero.value || '').trim();
@@ -1132,9 +1136,50 @@
     }
   }
 
+  async function deleteCurrentDocument() {
+    const doc = currentModalDoc;
+    if (!doc || !doc.arquivo) return;
+    if (!confirm('Mover este documento para a pasta de recuperação? Ele sairá do painel, mas o PDF poderá ser recuperado em Documentos/_Excluidos.')) {
+      return;
+    }
+
+    const deleteBtn = document.getElementById('modal-delete-btn');
+    const originalText = deleteBtn ? deleteBtn.textContent : 'Excluir';
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = 'Excluindo...';
+    }
+
+    try {
+      const res = await fetch('/api/excluir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ arquivo: doc.arquivo })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao excluir documento.');
+      }
+
+      allDocuments = allDocuments.filter(item => item.arquivo !== doc.arquivo);
+      hiddenDocuments = hiddenDocuments.filter(item => item.arquivo !== doc.arquivo);
+      selectedFiles.delete(doc.arquivo);
+      closeModal();
+      applyFilters();
+      updateSelectionToolbar();
+      alert(`Documento movido para a pasta de recuperação:\n${data.arquivo_recuperacao}`);
+    } catch (e) {
+      alert(e.message || 'Erro ao excluir documento.');
+      if (deleteBtn) {
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = originalText;
+      }
+    }
+  }
+
   async function saveEdit() {
-    const idx = parseInt(document.getElementById('edit-idx').value);
-    const doc = [...allDocuments, ...hiddenDocuments][idx]; // fallback lookup
+    const doc = currentModalDoc;
 
     if (!doc) {
       alert("Documento não encontrado.");
@@ -1147,6 +1192,7 @@
       assunto: document.getElementById('edit-assunto').value.trim(),
       numero: document.getElementById('edit-numero').value.trim(),
       data: document.getElementById('edit-data').value.trim(),
+      ano: doc.ano || '',
       categoria: document.getElementById('edit-categoria').value
     };
 

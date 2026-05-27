@@ -48,6 +48,7 @@
   let importModal, importFile, importNome, importAssunto, importCategoria, importAno, importData, importNumero;
   let newCategoryNameInput, newCategoryColorInput, categoryCreateStatus;
   let openDocumentsBtn, publicPackageBtn;
+  let runtimeStatus = null;
 
   // --- Category Configuration (harmonized with existing system) ---
   const CATEGORY_CONFIG = {
@@ -91,6 +92,18 @@
       return mergeAppConfig(await response.json());
     } catch (e) {
       return mergeAppConfig();
+    }
+  }
+
+  async function loadRuntimeStatus() {
+    if (!IS_HTTP) return null;
+    try {
+      const response = await fetch('/api/runtime-status', { cache: 'no-store' });
+      if (!response.ok) return null;
+      runtimeStatus = await response.json();
+      return runtimeStatus;
+    } catch (e) {
+      return null;
     }
   }
 
@@ -718,6 +731,16 @@
           <p>Nenhum documento foi carregado.</p>
           <p style="font-size:0.85rem">Verifique se o arquivo <code>site/dados.js</code> existe e tem conteúdo.</p>
         `;
+        if (runtimeStatus) {
+          const docsPath = runtimeStatus.documentos_dir || '';
+          const pdfCount = Number.isInteger(runtimeStatus.pdf_count) ? runtimeStatus.pdf_count : 0;
+          empty.innerHTML = `
+            <p>Nenhum documento foi carregado.</p>
+            <p style="font-size:0.85rem">Pasta lida pelo app: <code>${escapeHtml(docsPath)}</code></p>
+            <p style="font-size:0.85rem">PDFs encontrados nessa pasta: <strong>${pdfCount}</strong></p>
+            <p style="font-size:0.85rem">Clique em <strong>Abrir pasta Documentos</strong>, confirme que os PDFs estÃ£o nessa pasta e depois clique em <strong>Sincronizar</strong>.</p>
+          `;
+        }
       } else {
         empty.innerHTML = `
           <p>Nenhum documento encontrado com os filtros atuais.</p>
@@ -1322,6 +1345,7 @@
 
   // --- Initialization ---
   async function init() {
+    await loadRuntimeStatus();
     const appConfig = await loadAppConfig();
     applyAppConfig(appConfig);
 

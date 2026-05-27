@@ -120,6 +120,40 @@ def sync_data() -> None:
     gerar_dados_main()
 
 
+def count_catalogable_pdfs() -> int:
+    count = 0
+    for pdf_path in EXPORT_DIR.rglob("*.pdf"):
+        try:
+            rel = pdf_path.relative_to(EXPORT_DIR)
+        except ValueError:
+            continue
+        if rel.parts and rel.parts[0] == RECOVERY_FOLDER:
+            continue
+        count += 1
+    return count
+
+
+def dados_file_is_empty() -> bool:
+    dados_file = SITE_DIR / "dados.js"
+    if not dados_file.exists():
+        return True
+    try:
+        text = dados_file.read_text("utf-8")
+    except OSError:
+        return False
+    return "const DOCUMENTOS = [];" in text
+
+
+def ensure_initial_catalog() -> None:
+    if count_catalogable_pdfs() == 0 or not dados_file_is_empty():
+        return
+    try:
+        print("[INFO] Documentos encontrados com dados.js vazio. Sincronizando automaticamente...")
+        sync_data()
+    except Exception as error:
+        print(f"[AVISO] Sincronização automática inicial falhou: {error}")
+
+
 def update_pdf_metadata(file_path, novo_nome, novo_assunto):
     try:
         from pypdf import PdfReader, PdfWriter
@@ -191,6 +225,17 @@ def serve_shared_data(filename):
 @app.route("/api/config", methods=["GET"])
 def app_config():
     return jsonify(load_app_config(RUNTIME))
+
+
+@app.route("/api/runtime-status", methods=["GET"])
+def runtime_status():
+    return jsonify({
+        "data_dir": str(RUNTIME.data_dir),
+        "documentos_dir": str(EXPORT_DIR),
+        "site_dir": str(SITE_DIR),
+        "dados_js": str(SITE_DIR / "dados.js"),
+        "pdf_count": count_catalogable_pdfs(),
+    })
 
 
 @app.route("/api/abrir-documentos", methods=["POST"])
@@ -450,6 +495,7 @@ def gerar_pacote_publico():
 
 
 if __name__ == "__main__":
+    ensure_initial_catalog()
     print("=" * 60)
     print("Servidor de Administração Local do Portfólio")
     print("  Administração: http://localhost:5000/admin/")

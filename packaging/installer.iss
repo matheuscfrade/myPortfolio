@@ -1,5 +1,5 @@
 #define MyAppName "Portfolio Profissional"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppExeName "PortfolioProfissional.exe"
 
 [Setup]

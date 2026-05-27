@@ -2,8 +2,6 @@ import os
 import re
 import json
 import shutil
-import subprocess
-import sys
 import zipfile
 from datetime import datetime
 from io import BytesIO
@@ -19,7 +17,6 @@ SITE_DIR = RUNTIME.site_dir
 EXPORT_DIR = RUNTIME.documentos_dir
 PUBLIC_SITE_DIR = RUNTIME.public_site_dir
 ADMIN_SITE_DIR = RUNTIME.admin_site_dir
-SCRIPT_GERAR = RUNTIME.scripts_dir / "gerar_dados.py"
 
 app = Flask(__name__, static_folder=None)
 
@@ -347,27 +344,11 @@ def ocultar():
 def sync_db():
 
     try:
-        print("[INFO] Sincronização manual iniciada. Rodando gerar_dados.py...")
-        result = subprocess.run(
-            [sys.executable, str(SCRIPT_GERAR)],
-            cwd=str(ROOT),
-            check=True,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-        )
-        if result.stdout:
-            print(result.stdout)
+        print("[INFO] Sincronização manual iniciada. Gerando dados no processo atual...")
+        from gerar_dados import main as gerar_dados_main
+        gerar_dados_main()
         print("[OK] dados.js atualizado com sucesso via sync.")
         return jsonify({"success": True})
-    except subprocess.CalledProcessError as e:
-        details = "\n".join(part for part in [e.stdout, e.stderr] if part).strip()
-        print(f"[ERRO] Falha ao sincronizar:\n{details or e}")
-        return jsonify({
-            "error": "Falha ao executar gerar_dados.py.",
-            "details": details or str(e),
-        }), 500
     except Exception as e:
         print(f"[ERRO] Falha inesperada ao sincronizar: {e}")
         return jsonify({"error": str(e)}), 500

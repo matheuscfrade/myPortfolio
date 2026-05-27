@@ -132,9 +132,32 @@ def test_public_package_api_creates_output_folder():
     assert "dist-publico" in response.json["path"]
 
 
+def test_sync_does_not_spawn_subprocess():
+    sentinel = type("SubprocessSentinel", (), {})()
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("sync must not spawn sys.executable in the packaged app")
+
+    sentinel.run = fail_if_called
+    previous = getattr(servidor_admin, "subprocess", None)
+    servidor_admin.subprocess = sentinel
+    try:
+        client = servidor_admin.app.test_client()
+        response = client.post("/api/sync")
+    finally:
+        if previous is None:
+            delattr(servidor_admin, "subprocess")
+        else:
+            servidor_admin.subprocess = previous
+
+    assert response.status_code == 200
+    assert response.json["success"] is True
+
+
 if __name__ == "__main__":
     test_exportar_returns_zip_with_selected_files_and_excel_metadata()
     test_exportar_keeps_legacy_arquivos_payload()
     test_exportar_rejects_unsafe_paths()
     test_config_api_is_read_only_and_shared_config_uses_installer_file()
     test_public_package_api_creates_output_folder()
+    test_sync_does_not_spawn_subprocess()

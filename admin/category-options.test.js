@@ -17,6 +17,19 @@ assert.match(mainJs, /Não Categorizado/, 'admin should expose the triage catego
 assert.match(mainJs, /modal-delete-btn/, 'document detail modal should expose a delete action');
 assert.match(mainJs, /loadDataFromText/, 'admin should reload dados.js from text to avoid stale DOCUMENTOS after sync');
 assert.match(mainJs, /cache:\s*'no-store'/, 'admin should bypass browser cache when reloading shared data');
+assert.match(indexHtml, /id="show-hidden-wrapper"/, 'admin markup should include the show-hidden toggle wrapper');
+assert.match(indexHtml, /Mostrar ocultos/, 'admin markup should include the show-hidden label');
+assert.match(mainJs, /function updateShowHiddenToggle\s*\(/, 'admin should refresh show-hidden visibility after hide/unhide/load');
+assert.match(mainJs, /updateShowHiddenToggle\(\)/, 'admin should call updateShowHiddenToggle when hidden state changes');
+// Guard against the old one-shot init that only showed the control when hiddenDocuments already existed at boot.
+assert.doesNotMatch(
+  mainJs,
+  /__isLocal && hiddenDocuments\.length > 0 && showHiddenWrapper && showHiddenToggle/,
+  'show-hidden toggle must not depend only on a one-time boot-time hiddenDocuments check'
+);
+
+const showHiddenWrapperEl = { style: { display: 'none' } };
+const showHiddenToggleEl = { checked: false, addEventListener() {} };
 
 const context = {
   console,
@@ -27,6 +40,11 @@ const context = {
     addEventListener() {},
     createElement() {
       return {};
+    },
+    getElementById(id) {
+      if (id === 'show-hidden-wrapper') return showHiddenWrapperEl;
+      if (id === 'show-hidden-toggle') return showHiddenToggleEl;
+      return null;
     },
     head: {
       appendChild() {}
@@ -39,6 +57,42 @@ vm.createContext(context);
 vm.runInContext(mainJs, context);
 
 assert.ok(context.__portfolioAdminTest, 'admin test helpers should be exposed');
+assert.equal(typeof context.__portfolioAdminTest.updateShowHiddenToggle, 'function', 'updateShowHiddenToggle should be exposed for tests');
+
+// Fresh install (no hidden docs yet): control stays hidden.
+context.window.__isLocal = true;
+context.__portfolioAdminTest.setHiddenDocumentsForTest([]);
+context.__portfolioAdminTest.setIncludeHiddenForTest(false);
+showHiddenWrapperEl.style.display = 'none';
+context.__portfolioAdminTest.updateShowHiddenToggle();
+assert.equal(
+  showHiddenWrapperEl.style.display,
+  'none',
+  'show-hidden toggle stays hidden when there are no hidden documents'
+);
+
+// After the first document is hidden, the control must appear without a full page reload.
+context.__portfolioAdminTest.setHiddenDocumentsForTest([{ arquivo: 'doc-oculto.pdf', oculto: true }]);
+context.__portfolioAdminTest.updateShowHiddenToggle();
+assert.equal(
+  showHiddenWrapperEl.style.display,
+  'flex',
+  'show-hidden toggle becomes visible after documents are hidden'
+);
+
+// Non-local host must never expose the control.
+context.window.__isLocal = false;
+context.location.hostname = 'example.com';
+context.__portfolioAdminTest.updateShowHiddenToggle();
+assert.equal(
+  showHiddenWrapperEl.style.display,
+  'none',
+  'show-hidden toggle remains unavailable outside localhost admin'
+);
+
+// Restore local host for remaining tests that share this context.
+context.window.__isLocal = true;
+context.location.hostname = '127.0.0.1';
 
 assert.deepEqual(
   JSON.parse(JSON.stringify(context.__portfolioAdminTest.mergeAppConfig({ displayName: 'Ana' }))),

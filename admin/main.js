@@ -1179,6 +1179,7 @@
           allDocuments.push(doc);
         }
 
+        updateShowHiddenToggle();
         applyFilters();
         renderGrid();
       } else {
@@ -1219,6 +1220,7 @@
       hiddenDocuments = hiddenDocuments.filter(item => item.arquivo !== doc.arquivo);
       selectedFiles.delete(doc.arquivo);
       closeModal();
+      updateShowHiddenToggle();
       applyFilters();
       updateSelectionToolbar();
       alert(`Documento movido para a pasta de recuperação:\n${data.arquivo_recuperacao}`);
@@ -1296,6 +1298,84 @@
   }
 
   // --- Filter Controls ---
+
+  // Show/hide the "Mostrar ocultos" control for the local admin.
+  // Visibility is refreshed after load/sync/hide/unhide/delete so a fresh install
+  // (ocultos.json empty) still gains the control as soon as any document is hidden.
+  function updateShowHiddenToggle() {
+    const showHiddenWrapper = document.getElementById('show-hidden-wrapper');
+    if (!showHiddenWrapper) return;
+
+    const isLocal = !!(window.__isLocal || location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+    // Keep visible while the user is already including hidden docs, even if the last
+    // one was just un-hidden (so they can turn the checkbox off cleanly).
+    const shouldShow = isLocal && (hiddenDocuments.length > 0 || includeHidden);
+    showHiddenWrapper.style.display = shouldShow ? 'flex' : 'none';
+
+    if (!shouldShow) {
+      const toggle = document.getElementById('show-hidden-toggle');
+      if (toggle) toggle.checked = false;
+      includeHidden = false;
+    }
+  }
+
+  let showHiddenToggleWired = false;
+
+  function setupShowHiddenToggle() {
+    const showHiddenToggle = document.getElementById('show-hidden-toggle');
+    if (!showHiddenToggle) {
+      updateShowHiddenToggle();
+      return;
+    }
+
+    if (!showHiddenToggleWired) {
+      showHiddenToggleWired = true;
+      showHiddenToggle.addEventListener('change', () => {
+        includeHidden = showHiddenToggle.checked;
+        console.log('[admin] Mostrar ocultos toggled to:', includeHidden);
+        console.log('[admin] hiddenDocuments count:', hiddenDocuments.length);
+
+        if (includeHidden) {
+          // Expand year range to cover hidden documents too
+          if (window.__fullYearMin != null && window.__fullYearMax != null) {
+            yearMin = Math.min(yearMin || window.__fullYearMin, window.__fullYearMin);
+            yearMax = Math.max(yearMax || window.__fullYearMax, window.__fullYearMax);
+
+            if (yearMinInput) yearMinInput.value = yearMin;
+            if (yearMaxInput) yearMaxInput.value = yearMax;
+          }
+
+          // Use full category counts while showing hidden
+          if (window.__fullCategoryMeta) {
+            categoryMeta = { ...window.__fullCategoryMeta };
+          }
+        } else {
+          // Restore visible-only stats when hiding the hidden ones again
+          if (window.__visibleYearMin != null && window.__visibleYearMax != null) {
+            yearMin = window.__visibleYearMin;
+            yearMax = window.__visibleYearMax;
+            if (yearMinInput) yearMinInput.value = yearMin;
+            if (yearMaxInput) yearMaxInput.value = yearMax;
+          }
+
+          categoryMeta = {};
+          allDocuments.forEach(d => {
+            if (!categoryMeta[d.categoria]) categoryMeta[d.categoria] = 0;
+            categoryMeta[d.categoria]++;
+          });
+        }
+
+        updateShowHiddenToggle();
+        // Re-apply everything (applyFilters already updates grid, results count and hero stats)
+        renderCategoryChips();
+        applyFilters();
+        updateSelectionToolbar();
+      });
+    }
+
+    updateShowHiddenToggle();
+  }
+
   function clearAllFilters() {
     searchInput.value = '';
     activeCategories.clear();
@@ -1313,6 +1393,7 @@
     if (yearMinInput) yearMinInput.value = '';
     if (yearMaxInput) yearMaxInput.value = '';
 
+    updateShowHiddenToggle();
     applyFilters();
   }
 
@@ -1424,54 +1505,9 @@
     try {
       await loadData();
 
-      // Show "Mostrar ocultos" toggle only for the owner on localhost
-      const showHiddenWrapper = document.getElementById('show-hidden-wrapper');
-      const showHiddenToggle = document.getElementById('show-hidden-toggle');
-
-      if (window.__isLocal && hiddenDocuments.length > 0 && showHiddenWrapper && showHiddenToggle) {
-        showHiddenWrapper.style.display = 'flex';
-
-        showHiddenToggle.addEventListener('change', () => {
-          includeHidden = showHiddenToggle.checked;
-          console.log('[admin] Mostrar ocultos toggled to:', includeHidden);
-          console.log('[admin] hiddenDocuments count:', hiddenDocuments.length);
-
-          if (includeHidden) {
-            // Expand year range to cover hidden documents too
-            if (window.__fullYearMin != null && window.__fullYearMax != null) {
-              yearMin = Math.min(yearMin || window.__fullYearMin, window.__fullYearMin);
-              yearMax = Math.max(yearMax || window.__fullYearMax, window.__fullYearMax);
-
-              if (yearMinInput) yearMinInput.value = yearMin;
-              if (yearMaxInput) yearMaxInput.value = yearMax;
-            }
-
-            // Use full category counts while showing hidden
-            if (window.__fullCategoryMeta) {
-              categoryMeta = { ...window.__fullCategoryMeta };
-            }
-          } else {
-            // Restore visible-only stats when hiding the hidden ones again
-            if (window.__visibleYearMin != null && window.__visibleYearMax != null) {
-              yearMin = window.__visibleYearMin;
-              yearMax = window.__visibleYearMax;
-              if (yearMinInput) yearMinInput.value = yearMin;
-              if (yearMaxInput) yearMaxInput.value = yearMax;
-            }
-
-            categoryMeta = {};
-            allDocuments.forEach(d => {
-              if (!categoryMeta[d.categoria]) categoryMeta[d.categoria] = 0;
-              categoryMeta[d.categoria]++;
-            });
-          }
-
-          // Re-apply everything (applyFilters already updates grid, results count and hero stats)
-          renderCategoryChips();
-          applyFilters();
-          updateSelectionToolbar();
-        });
-      }
+      // "Mostrar ocultos" is local-admin only; visibility is kept in sync after
+      // load/sync and whenever documents are hidden or restored.
+      setupShowHiddenToggle();
 
       // Initial UI
       renderCategorySelect(importCategoria);
@@ -1513,6 +1549,7 @@
               
               // Reload data in current admin UI so changes are visible immediately
               await loadData();
+              setupShowHiddenToggle();
               renderCategoryChips();
               applyFilters();
               updateHeroStats();
@@ -1591,7 +1628,13 @@
     normalizeCategoryName,
     registerCategory,
     buildExportPayload,
-    mergeAppConfig
+    mergeAppConfig,
+    updateShowHiddenToggle,
+    setupShowHiddenToggle,
+    getHiddenDocuments: () => hiddenDocuments,
+    setHiddenDocumentsForTest: (docs) => { hiddenDocuments = docs; },
+    getIncludeHidden: () => includeHidden,
+    setIncludeHiddenForTest: (value) => { includeHidden = !!value; }
   };
 
   // Boot

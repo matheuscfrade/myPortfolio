@@ -55,11 +55,57 @@ def safe_filename(value):
     return re.sub(r'[\\/*?:"<>|]', "", str(value or "")).strip()
 
 
+# Windows traditional MAX_PATH is 260. Stay under it so shutil/move works without long-path
+# opt-in. Subject text belongs in metadata (edicoes.json / PDF), not in unbounded filenames.
+MAX_WINDOWS_PATH = 240
+MAX_PDF_FILENAME = 120
+
+
 def normalize_categoria_folder(categoria: str) -> str:
     cat = safe_filename(categoria)
     if cat in ("Cargo/Função", "CargoFunção", "Cargo - Função", "Cargofunção"):
         return "Cargo-Função"
     return cat or "Não Categorizado"
+
+
+def build_pdf_filename(nome: str, assunto: str = "", *, max_filename: int = MAX_PDF_FILENAME) -> str:
+    """Build a filesystem-safe PDF name that fits Windows path limits.
+
+    Short subjects may still be appended as a hint; long subjects are omitted from the
+    filename (they remain in edicoes.json and PDF metadata).
+    """
+    max_filename = max(24, int(max_filename))
+    # reserve for ".pdf"
+    max_stem = max(20, max_filename - 4)
+
+    base = safe_filename(nome) or "documento"
+    subject = safe_filename(assunto)
+
+    if subject:
+        combined = f"{base} - {subject}"
+        # Only keep the subject fragment when the full stem stays reasonably short.
+        if len(combined) <= max_stem and len(subject) <= 60:
+            stem = combined
+        else:
+            stem = base
+    else:
+        stem = base
+
+    if len(stem) > max_stem:
+        stem = stem[:max_stem].rstrip(" .-_")
+    if not stem:
+        stem = "documento"
+    return f"{stem}.pdf"
+
+
+def build_document_target(categoria: str, ano: str, nome: str, assunto: str = "") -> Path:
+    """Destination path for a document under Documentos/<categoria>/<ano>/."""
+    folder = EXPORT_DIR / normalize_categoria_folder(categoria) / safe_filename(str(ano))
+    # Cap filename so the absolute path stays under MAX_WINDOWS_PATH.
+    # len(folder) + 1 (separator) + filename <= MAX_WINDOWS_PATH
+    room_for_name = MAX_WINDOWS_PATH - len(str(folder.resolve() if folder.exists() else folder)) - 1
+    room_for_name = max(24, min(MAX_PDF_FILENAME, room_for_name))
+    return folder / build_pdf_filename(nome, assunto, max_filename=room_for_name)
 
 
 def resolve_document_file(arquivo: str) -> tuple[str, Path]:
@@ -329,14 +375,9 @@ def upload():
     if not nome or not ano or not categoria:
         return jsonify({"error": "Dados obrigatórios ausentes."}), 400
 
-    novo_nome_base = safe_filename(nome)
-    if assunto:
-        novo_nome_base += f" - {safe_filename(assunto)}"
-    novo_nome_base += ".pdf"
-
-    nova_pasta = EXPORT_DIR / normalize_categoria_folder(categoria) / safe_filename(ano)
-    nova_pasta.mkdir(parents=True, exist_ok=True)
-    arquivo_novo = unique_path(nova_pasta / novo_nome_base)
+    arquivo_alvo = build_document_target(categoria, ano, nome, assunto)
+    arquivo_alvo.parent.mkdir(parents=True, exist_ok=True)
+    arquivo_novo = unique_path(arquivo_alvo)
     file.save(arquivo_novo)
     update_pdf_metadata(arquivo_novo, nome, assunto)
 
@@ -381,18 +422,17 @@ def editar():
     if not nome:
         return jsonify({"error": "O campo Nome é obrigatório."}), 400
 
-    novo_nome_base = safe_filename(nome)
-    if assunto:
-        novo_nome_base += f" - {safe_filename(assunto)}"
-    novo_nome_base += ".pdf"
-
-    nova_pasta = EXPORT_DIR / normalize_categoria_folder(categoria) / safe_filename(ano)
-    nova_pasta.mkdir(parents=True, exist_ok=True)
-    arquivo_novo = unique_path(nova_pasta / novo_nome_base) if arquivo_antigo != (nova_pasta / novo_nome_base) else arquivo_antigo
+    arquivo_alvo = build_document_target(categoria, ano, nome, assunto)
+    arquivo_alvo.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the same path when the computed target matches the current file (case-insensitive on Windows).
+    if arquivo_antigo.resolve() == arquivo_alvo.resolve():
+        arquivo_novo = arquivo_antigo
+    else:
+        arquivo_novo = unique_path(arquivo_alvo)
 
     try:
-        if arquivo_antigo != arquivo_novo:
-            shutil.move(arquivo_antigo, arquivo_novo)
+        if arquivo_antigo.resolve() != arquivo_novo.resolve():
+            shutil.move(str(arquivo_antigo), str(arquivo_novo))
         update_pdf_metadata(arquivo_novo, nome, assunto)
 
         chave_nova = arquivo_novo.relative_to(EXPORT_DIR).as_posix()
